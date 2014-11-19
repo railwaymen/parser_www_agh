@@ -1,0 +1,14 @@
+<h1>Please choose data sources:</h1>
+<%= form_tag posts_path, class: 'form-horizontal' do %>
+  <%= collection_check_boxes :parser, :data_source_ids, @data_sources, :id, :name do |builder| %>
+    <div class='form-group'>
+      <div class='checkbox'>
+        <%= builder.label do %>
+          <%= builder.check_box %>
+          <%= builder.text %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+  <%= submit_tag 'Submit', class: 'btn btn-default' %>
+<% end %>
