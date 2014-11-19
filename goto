@@ -1,0 +1,4 @@
+#!/bin/bash
+git clean -fd
+git stash
+git checkout $1
