@@ -1,30 +1,31 @@
 class ParsingService
 
-  def self.parse_and_save source_name
-    data_source = DataSource.find_by_name source_name
-    posts_from_source = data_source.posts
-    parser_name = data_source.parser_name
+  def initialize(data_sources)
+    @data_sources = data_sources
+  end
 
-    parsed_data = send("#{parser_name}_parser").parse
-    parsed_data.each do |data|
-      unless posts_from_source.find_by(posted_at: data[:posted_at], title: data[:title])
-        posts_from_source.create(data)
+  def call
+    @data_sources.each do |data_source|
+      data = send("#{data_source.parser_name}_parser").parse
+      data.each do |attrs|
+        data_source.posts.find_or_create_by(posted_at: attrs[:posted_at], title: attrs[:title]) do |p|
+          p.assign_attributes(attrs)
+        end
       end
     end
   end
 
   private
 
-  def self.ki_parser
+  def ki_parser
     @ki_parser ||= KIParser.new
   end
 
- def self.iet_parser
-   @iet_parser ||= IETParser.new
- end
+  def iet_parser
+    @iet_parser ||= IETParser.new
+  end
 
- def self.sjo_parser
-   @sjo_parser ||= SJOParser.new
- end
-
+  def sjo_parser
+    @sjo_parser ||= SJOParser.new
+  end
 end
