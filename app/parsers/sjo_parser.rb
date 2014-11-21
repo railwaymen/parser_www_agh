@@ -1,43 +1,37 @@
 class SJOParser < Parser
 
-  BASE_PARSING_URL = 'http://home.agh.edu.pl/~sjo/'.freeze
-
-  def initialize
-    @url = BASE_PARSING_URL
-  end
+  BASE_URL = 'http://home.agh.edu.pl/~sjo'.freeze
 
   def parse
-    news_data = get_news_data_from_page
-    news_data.collect do |news_array|
+    page = Nokogiri::HTML(get_page)
+    news_nodes = page.css('#newsmain li')
+    news_nodes.map do |news_node|
+      link = news_node.css('a').first
       {
-        posted_at: news_array[0],
-        title: news_array[1],
-	origin_url: news_array[2],
-        content: get_content_from_url(news_array[2])
+        title:      link.text,
+        origin_url: link['href'],
+        posted_at:  get_date(news_node),
+        content:    get_content(link['href'])
       }
     end
   end
 
   private
 
-  def get_news_data_from_page
-    page = Nokogiri::HTML(open @url)
-    news_list = page.css '#newsmain ul'
-    dates = news_list.css('em').map(&:text)
-    links = news_list.css 'a'
-    urls = links.map{ |link| link['href'] }
-    titles = links.map(&:text)
-    dates.zip titles, urls
+  def get_page
+    open(BASE_URL).string.gsub('<b>', '').gsub('</b>', '')
   end
 
-  def get_content_from_url url
-    page = Nokogiri::HTML(open url)
-    text_nodes = page.css('.text').children
-    content = text_nodes.reject do |node|
-                node.name.match /h4|em/ ||
-                node['class'] == 'more'
-              end
-    strip_line_breaks_and_join content
+  def get_date(news_node)
+    text = news_node.at_css('em').text
+    Time.strptime(text, '%Y-%m-%d')
   end
 
+  def get_content(url)
+    page    = Nokogiri::HTML(open url)
+    content = page.at_css('#news')
+    content.at_css('h4').remove
+    content.at_css('em').remove
+    strip_line_breaks(content)
+  end
 end

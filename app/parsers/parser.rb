@@ -1,13 +1,13 @@
-class Parser
-  require 'open-uri'
+require 'open-uri'
 
+class Parser
   def parse
     raise NoMethodError
   end
 
-  protected
+  private
 
-  def strip_line_breaks_and_join nodeset
-    nodeset.map{ |node| node.text.gsub(/\r*\n+/, ' ').strip }.join
+  def strip_line_breaks(node)
+    node.text.gsub(/[\r\n\t]/, ' ').strip
   end
 end
