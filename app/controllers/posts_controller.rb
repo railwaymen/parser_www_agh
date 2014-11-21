@@ -4,7 +4,11 @@ class PostsController < ApplicationController
     service = ParsingService.new(data_sources)
     service.call
     @posts = Post.where(data_source_id: data_sources.pluck(:id)).order(posted_at: :desc)
-    render :index
+    respond_to do |format|
+      format.html { render :index }
+      format.xml { render xml: @posts }
+      format.json { render json: @posts }
+    end
   end
 
   private
