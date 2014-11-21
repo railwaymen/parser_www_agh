@@ -1,0 +1,9 @@
+<% @posts.each do |post| %>
+  <div class='post'>
+    <h2 class='page-header'>
+      <%= link_to post.title, post.origin_url %>
+    </h2>
+    <p class='lead'><%= post.posted_at.to_s(:long) %></p>
+    <p><%= post.content %></p>
+  </div>
+<% end %>
